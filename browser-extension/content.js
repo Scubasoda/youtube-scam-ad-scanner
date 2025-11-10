@@ -8,39 +8,99 @@ console.log('YouTube Scam Ad Scanner - Content script loaded');
 // Track captured ad URLs
 const capturedAds = new Set();
 
+// Debug mode - log everything
+const DEBUG = true;
+
+function debugLog(...args) {
+  if (DEBUG) {
+    console.log('[YT Scam Scanner]', ...args);
+  }
+}
+
 /**
  * Extract URL from YouTube ad elements
  */
 function extractAdUrl(element) {
+  if (!element) return null;
+  
   // YouTube ads have various structures, check multiple possibilities
   
   // 1. Check for direct href in anchor tags
   if (element.tagName === 'A' && element.href) {
-    return element.href;
+    return cleanUrl(element.href);
   }
   
-  // 2. Check parent anchor tags
-  const parentAnchor = element.closest('a');
+  // 2. Check parent and child anchor tags
+  const parentAnchor = element.closest('a[href]');
   if (parentAnchor && parentAnchor.href) {
-    return parentAnchor.href;
+    return cleanUrl(parentAnchor.href);
+  }
+  
+  const childAnchor = element.querySelector('a[href]');
+  if (childAnchor && childAnchor.href) {
+    return cleanUrl(childAnchor.href);
   }
   
   // 3. Check data attributes
   const dataUrl = element.getAttribute('data-url') || 
                   element.getAttribute('href') ||
-                  element.getAttribute('data-navigate-to');
+                  element.getAttribute('data-navigate-to') ||
+                  element.getAttribute('data-navigation-url');
   if (dataUrl) {
-    return dataUrl;
+    return cleanUrl(dataUrl);
+  }
+  
+  // 4. Look for URLs in onclick attributes
+  const onclick = element.getAttribute('onclick');
+  if (onclick) {
+    const urlMatch = onclick.match(/https?:\/\/[^\s"']+/);
+    if (urlMatch) {
+      return cleanUrl(urlMatch[0]);
+    }
   }
   
   return null;
 }
 
 /**
+ * Clean and validate URL
+ */
+function cleanUrl(url) {
+  if (!url) return null;
+  
+  // Remove Google redirect wrappers
+  if (url.includes('googleadservices.com') || url.includes('doubleclick.net')) {
+    try {
+      const urlObj = new URL(url);
+      const adurl = urlObj.searchParams.get('adurl');
+      if (adurl) {
+        return decodeURIComponent(adurl);
+      }
+    } catch (e) {
+      // Invalid URL, continue
+    }
+  }
+  
+  // Clean the URL
+  try {
+    const urlObj = new URL(url);
+    // Remove tracking parameters
+    urlObj.searchParams.delete('utm_source');
+    urlObj.searchParams.delete('utm_medium');
+    urlObj.searchParams.delete('utm_campaign');
+    return urlObj.toString();
+  } catch (e) {
+    return url; // Return as-is if can't parse
+  }
+}
+
+/**
  * Check if element is likely an ad
  */
 function isAdElement(element) {
-  // Check for common ad indicators
+  if (!element) return false;
+  
+  // Check for common ad indicators in class names
   const adIndicators = [
     'ad-showing',
     'video-ads',
@@ -48,33 +108,69 @@ function isAdElement(element) {
     'ad-container',
     'ad-text',
     'visit-advertiser',
-    'videoAdUi'
+    'videoAdUi',
+    'ytp-ad-overlay',
+    'ytp-ad-text',
+    'ytp-ad-image',
+    'ytp-ad-player-overlay',
+    'video-ads',
+    'companion-ad'
   ];
   
-  // Check element and parent classes
-  const elementClasses = element.className || '';
-  const parentClasses = element.parentElement?.className || '';
+  // Get all classes from element and parents
+  let currentElement = element;
+  let depth = 0;
   
-  return adIndicators.some(indicator => 
-    elementClasses.includes(indicator) || 
-    parentClasses.includes(indicator)
-  );
+  while (currentElement && depth < 5) {
+    const elementClasses = currentElement.className || '';
+    const elementId = currentElement.id || '';
+    
+    // Check classes
+    if (adIndicators.some(indicator => 
+      elementClasses.toString().includes(indicator) || 
+      elementId.toString().includes(indicator)
+    )) {
+      return true;
+    }
+    
+    // Check for data attributes
+    const dataAttrs = Array.from(currentElement.attributes || [])
+      .filter(attr => attr.name.startsWith('data-'))
+      .map(attr => attr.value.toLowerCase())
+      .join(' ');
+    
+    if (dataAttrs.includes('ad') || dataAttrs.includes('advertis')) {
+      return true;
+    }
+    
+    currentElement = currentElement.parentElement;
+    depth++;
+  }
+  
+  return false;
 }
 
 /**
  * Capture ad URL and send to background script
  */
 function captureAdUrl(url) {
-  if (!url || capturedAds.has(url)) {
-    return; // Already captured or invalid
+  if (!url) {
+    debugLog('No URL to capture');
+    return;
+  }
+  
+  if (capturedAds.has(url)) {
+    debugLog('URL already captured:', url);
+    return; // Already captured
   }
   
   // Filter out YouTube internal URLs
   if (url.includes('youtube.com') || url.includes('googlevideo.com')) {
+    debugLog('Skipping YouTube internal URL:', url);
     return;
   }
   
-  console.log('Captured ad URL:', url);
+  debugLog('✅ Captured ad URL:', url);
   capturedAds.add(url);
   
   // Send to background script
@@ -106,11 +202,29 @@ function setupClickMonitoring() {
   document.addEventListener('click', (event) => {
     const target = event.target;
     
+    debugLog('Click detected on:', target.tagName, target.className);
+    
     // Check if clicked element is or contains an ad
     if (isAdElement(target)) {
+      debugLog('Ad element clicked!');
       const url = extractAdUrl(target);
       if (url) {
         captureAdUrl(url);
+      } else {
+        debugLog('Could not extract URL from ad element');
+      }
+    }
+    
+    // Also check all links clicked (catch-all)
+    if (target.tagName === 'A' || target.closest('a')) {
+      const link = target.tagName === 'A' ? target : target.closest('a');
+      if (link.href && !link.href.includes('youtube.com') && !link.href.includes('googlevideo.com')) {
+        debugLog('External link clicked:', link.href);
+        // Check if it might be an ad
+        const text = link.textContent.toLowerCase();
+        if (text.includes('ad') || text.includes('sponsor') || isAdElement(link)) {
+          captureAdUrl(cleanUrl(link.href));
+        }
       }
     }
   }, true); // Use capture phase to catch before navigation
