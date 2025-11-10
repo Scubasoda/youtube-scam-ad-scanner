@@ -1,0 +1,60 @@
+# Sample URLs for Testing YouTube Scam Ad Scanner
+
+# LEGITIMATE SITES (should score low/minimal risk)
+https://www.wikipedia.org
+https://www.github.com
+https://www.python.org
+https://docs.microsoft.com
+
+# SUSPICIOUS PATTERNS (for testing detection - may not be actual scam sites)
+# Note: These are examples showing patterns that would trigger indicators
+# Do NOT visit these URLs - they are for testing pattern recognition only
+
+# Suspicious TLD examples (pattern testing):
+# http://example.xyz
+# http://example.top
+# http://example.click
+# http://test-offer.loan
+
+# No HTTPS examples:
+# http://example-site.com
+
+# Long domain examples:
+# http://verylongdomainnamethatseemsunusuallylongandsuspicious.com
+
+# Multiple hyphens:
+# http://get-money-fast-today-limited-offer.com
+
+# IP address:
+# http://192.168.1.1
+
+# TESTING INSTRUCTIONS
+# --------------------
+# 1. Use these URLs to test the scanner's detection capabilities
+# 2. Legitimate URLs should score MINIMAL or LOW risk
+# 3. Suspicious patterns (when implemented) should trigger appropriate indicators
+# 4. Always exercise caution with unfamiliar URLs
+# 5. Never visit URLs you suspect are malicious
+
+# BATCH TESTING SCRIPT
+# --------------------
+# To test multiple URLs from this file:
+#
+# 1. Uncomment the URLs you want to test
+# 2. Create a simple Python script:
+#
+#    from src.scanner import ScamScanner
+#    
+#    urls = [
+#        "https://www.wikipedia.org",
+#        "https://www.github.com",
+#        # Add more URLs
+#    ]
+#    
+#    scanner = ScamScanner()
+#    for url in urls:
+#        results = scanner.scan_url(url)
+#        print(f"{url}: {results['risk_level']} ({results['risk_score']})")
+#
+# 3. Run the script:
+#    python test_batch.py
