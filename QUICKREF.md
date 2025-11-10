@@ -10,9 +10,24 @@ pip install -r requirements.txt
 
 ## Basic Commands
 
+### Start Automatic Scanning
+```bash
+python api_server.py              # Start API server
+start_server.bat                  # Windows quick start
+./start_server.sh                 # macOS/Linux quick start
+```
+
 ### Scan a URL
 ```bash
 python -m src.scanner --url "https://example.com"
+```
+
+### View Logs
+```bash
+python view_logs.py view          # Recent scans
+python view_logs.py stats         # Statistics
+python view_logs.py report        # HTML report
+python view_logs.py find "url"    # Find specific URL
 ```
 
 ### JSON Output
@@ -28,6 +43,7 @@ python -m src.scanner --url "https://example.com" --timeout 15
 ### Help
 ```bash
 python -m src.scanner --help
+python view_logs.py --help
 ```
 
 ## Testing
@@ -164,7 +180,8 @@ for url in urls:
 - 📖 Full documentation: README.md
 - 🔧 Setup guide: SETUP.md
 - 💡 Examples: EXAMPLES.md
-- 🤝 Contributing: CONTRIBUTING.md
+- � Auto-scan guide: AUTOSCAN.md
+- �🤝 Contributing: CONTRIBUTING.md
 - 📋 Changelog: CHANGELOG.md
 
 ## Tips

@@ -20,7 +20,7 @@ This scanner analyzes URLs for suspicious characteristics that commonly appear i
 
 ## Quick Start
 
-### Installation
+### Python Scanner Installation
 
 1. **Clone the repository** (or download the source)
 
@@ -38,12 +38,47 @@ This scanner analyzes URLs for suspicious characteristics that commonly appear i
    pip install -r requirements.txt
    ```
 
+### Browser Extension Installation (Captures YouTube Ad URLs)
+
+1. **Open Chrome/Edge** and go to `chrome://extensions/`
+2. **Enable "Developer mode"** (toggle in top right)
+3. **Click "Load unpacked"**
+4. **Select** the `browser-extension` folder from this repository
+5. **Start browsing YouTube** - the extension will automatically capture ad URLs!
+
+See [browser-extension/README.md](browser-extension/README.md) for detailed instructions.
+
 ### Basic Usage
 
 **Scan a suspicious URL:**
 
 ```bash
 python -m src.scanner --url "https://example.com/suspicious-offer"
+```
+
+**Automatic scanning with browser extension:**
+
+```bash
+# Start the API server
+python api_server.py
+# Or use the quick-start script:
+# Windows: start_server.bat
+# macOS/Linux: ./start_server.sh
+
+# Then browse YouTube - ads are scanned automatically!
+```
+
+**View scan logs:**
+
+```bash
+# View recent scans
+python view_logs.py view
+
+# Show statistics
+python view_logs.py stats
+
+# Generate HTML report
+python view_logs.py report
 ```
 
 **Get JSON output:**
@@ -88,18 +123,30 @@ Indicators Found (5):
 
 ```
 youtube-scam-ad-scanner/
-├── README.md              # This file
-├── LICENSE                # MIT license
-├── EXAMPLES.md            # Detailed usage examples
-├── requirements.txt       # Python dependencies
-├── pytest.ini             # Pytest configuration
-├── .gitignore            # Git ignore patterns
+├── README.md                    # This file
+├── LICENSE                      # MIT license
+├── EXAMPLES.md                  # Detailed usage examples
+├── SETUP.md                     # Installation guide
+├── CONTRIBUTING.md              # Contribution guidelines
+├── requirements.txt             # Python dependencies
+├── pytest.ini                   # Pytest configuration
+├── .gitignore                   # Git ignore patterns
 ├── src/
-│   ├── __init__.py       # Package initialization
-│   └── scanner.py        # Main scanner implementation and CLI
-└── tests/
-    ├── __init__.py       # Test package initialization
-    └── test_scanner.py   # Unit tests
+│   ├── __init__.py             # Package initialization
+│   ├── scanner.py              # Main scanner implementation and CLI
+│   └── config.py               # Configuration settings
+├── tests/
+│   ├── __init__.py             # Test package initialization
+│   └── test_scanner.py         # Unit tests
+├── browser-extension/           # Chrome/Edge extension
+│   ├── manifest.json           # Extension manifest
+│   ├── content.js              # YouTube page monitoring
+│   ├── background.js           # Background service worker
+│   ├── popup.html/js           # Extension popup UI
+│   ├── icons/                  # Extension icons
+│   └── README.md               # Extension documentation
+├── test_batch.py                # Batch URL scanner
+└── generate_icons.py            # Icon generator for extension
 ```
 
 ## Features
@@ -183,16 +230,68 @@ See [EXAMPLES.md](EXAMPLES.md) for detailed usage examples and integration patte
 - **Static analysis only**: Does not execute JavaScript or analyze images
 - **Context matters**: Some legitimate sites may trigger warnings
 
+## Browser Extension
+
+A **Chrome/Edge extension** is included that automatically captures YouTube ad URLs! 
+
+**Features:**
+- ✅ Monitors YouTube for ads automatically
+- ✅ Captures ad destination URLs when you interact with ads
+- ✅ Shows count of captured URLs in badge
+- ✅ Export URLs for batch scanning
+- ✅ All data stays local - complete privacy
+
+**Installation:**
+1. Open `chrome://extensions/` in Chrome or Edge
+2. Enable Developer Mode
+3. Load the `browser-extension` folder
+4. Browse YouTube normally - ads are captured automatically!
+
+See [browser-extension/README.md](browser-extension/README.md) for full documentation.
+
+## Workflow: Capture → Scan → Report
+
+### Option 1: Automatic (Recommended)
+
+1. **Start API Server**: `python api_server.py` (or use `start_server.bat`)
+2. **Install Extension**: Load `browser-extension` in Chrome
+3. **Browse YouTube**: Ads are captured and scanned automatically
+4. **View Results**: `python view_logs.py stats`
+
+### Option 2: Manual
+
+1. **Capture**: Browser extension saves ad URLs
+2. **Export**: Click "Export URLs" in extension popup  
+3. **Scan**: `python -m src.scanner --url "URL"`
+
+```bash
+# Automatic workflow
+python api_server.py  # Keep running in background
+# Browse YouTube normally
+python view_logs.py view  # See all scanned ads
+
+# Manual workflow  
+# The extension captures URLs, then you scan them:
+python -m src.scanner --url "CAPTURED_URL_HERE"
+
+# Or export from extension and batch scan:
+python test_batch.py
+```
+
+See [AUTOSCAN.md](AUTOSCAN.md) for detailed automatic scanning guide.
+
 ## Future Work
 
 Planned enhancements:
-- 🔌 Browser extension to capture ads automatically
+- ✅ Browser extension to capture ads automatically **(DONE!)**
+- 🔄 Real-time scanning via local API (extension → Python scanner)
 - 🤖 Machine learning models trained on labeled scam ads
 - 📸 Selenium-based ad capture with screenshots
 - 🗄️ Database of known scam domains
 - 📊 Visual analysis of landing pages
 - 📤 Report submission to platforms (YouTube, etc.)
 - 🌐 API service for integration with other tools
+- 🚫 Auto-block high-risk ads in browser
 
 ## Contributing
 
