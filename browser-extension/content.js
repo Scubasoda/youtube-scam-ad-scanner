@@ -3,19 +3,26 @@
  * Captures ad URLs when users interact with ads
  */
 
-console.log('YouTube Scam Ad Scanner - Content script loaded');
+(function() {
+  'use strict';
+  
+  console.log('🚀 YouTube Scam Ad Scanner - Content script loaded!');
+  console.log('Current URL:', window.location.href);
+  console.log('Page title:', document.title);
 
-// Track captured ad URLs
-const capturedAds = new Set();
+  // Track captured ad URLs
+  const capturedAds = new Set();
 
-// Debug mode - log everything
-const DEBUG = true;
+  // Debug mode - log everything
+  const DEBUG = true;
 
-function debugLog(...args) {
-  if (DEBUG) {
-    console.log('[YT Scam Scanner]', ...args);
+  function debugLog(...args) {
+    if (DEBUG) {
+      console.log('[YT Scam Scanner]', ...args);
+    }
   }
-}
+  
+  debugLog('Initializing scanner...');
 
 /**
  * Extract URL from YouTube ad elements
@@ -309,4 +316,6 @@ if (document.readyState === 'loading') {
 // Retry monitoring video player after a delay (in case it loads late)
 setTimeout(monitorVideoPlayer, 2000);
 
-console.log('YouTube Scam Ad Scanner - Monitoring started');
+debugLog('YouTube Scam Ad Scanner - Monitoring started');
+
+})(); // End of IIFE wrapper
