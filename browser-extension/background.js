@@ -3,12 +3,15 @@
  * Handles captured ad URLs and coordinates scanning
  */
 
-console.log('YouTube Scam Ad Scanner - Background service worker loaded');
+console.log('🚀 YouTube Scam Ad Scanner - Background service worker loaded');
+console.log('API endpoint: http://localhost:5000');
 
 // Listen for messages from content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log('📨 Background received message:', message.type, message);
+  
   if (message.type === 'AD_URL_CAPTURED') {
-    console.log('Background: Ad URL captured:', message.url);
+    console.log('✅ Background: Ad URL captured:', message.url);
     
     // Store the URL
     storeAdUrl(message.url, message.timestamp, message.pageUrl);
@@ -58,9 +61,10 @@ function storeAdUrl(url, timestamp, pageUrl) {
       
       ads.push(newAd);
       chrome.storage.local.set({ capturedAds: ads });
-      console.log('Stored ad URL:', url);
+      console.log('💾 Stored ad URL:', url);
       
       // Auto-scan if enabled
+      console.log('🔍 Starting auto-scan for:', url);
       autoScanIfEnabled(url, { pageUrl: pageUrl, capturedAt: timestamp });
     }
   });
@@ -171,12 +175,18 @@ async function scanUrl(url, metadata = {}) {
  */
 async function autoScanIfEnabled(url, metadata) {
   chrome.storage.sync.get(['autoScan'], async (result) => {
+    console.log('Auto-scan setting:', result.autoScan);
     if (result.autoScan !== false) {  // Default to true
+      console.log('🔄 Auto-scanning URL:', url);
       try {
-        await scanUrl(url, metadata);
+        const scanResult = await scanUrl(url, metadata);
+        console.log('✅ Scan completed:', scanResult);
       } catch (error) {
-        console.log('Auto-scan failed, URL will remain unscanned');
+        console.error('❌ Auto-scan failed:', error);
+        console.log('URL will remain unscanned');
       }
+    } else {
+      console.log('Auto-scan is disabled');
     }
   });
 }

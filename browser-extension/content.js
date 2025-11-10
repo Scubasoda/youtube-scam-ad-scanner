@@ -124,10 +124,17 @@
     debugLog('CAPTURED AD URL:', url);
     capturedAds.add(url);
     
+    // Send to background script for scanning
     chrome.runtime.sendMessage({
       type: 'AD_URL_CAPTURED',
       url: url,
       timestamp: Date.now()
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('Error sending message:', chrome.runtime.lastError);
+      } else {
+        debugLog('Message sent successfully:', response);
+      }
     });
   }
 
