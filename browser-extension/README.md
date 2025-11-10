@@ -2,6 +2,20 @@
 
 This Chrome/Edge extension automatically captures ad URLs from YouTube and integrates with the Python scanner.
 
+## ⚠️ Important Legal Notice
+
+**This extension is for personal security research and educational purposes only.**
+
+- ✅ Use for analyzing ads you personally encounter
+- ✅ Keep data private and secure
+- ✅ Report scams through official YouTube channels
+- ❌ Do NOT use for mass data collection or commercial purposes
+- ❌ Do NOT violate YouTube's Terms of Service
+
+**You are responsible for ensuring your use complies with all applicable terms and laws.**
+
+See [../LEGAL.md](../LEGAL.md) for complete disclaimer.
+
 ## Features
 
 - ✅ Automatically captures ad URLs when you browse YouTube

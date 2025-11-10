@@ -301,9 +301,38 @@ This is currently a private prototype. Contributions, suggestions, and bug repor
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
+## Legal & Terms of Service
+
+### Important Notice
+
+This tool is designed for **personal security research and educational purposes only**. 
+
+**Guidelines for Compliant Use:**
+- ✅ Use for personal protection against scam ads you encounter
+- ✅ Manual browsing and analysis only
+- ✅ Report scams to YouTube through official channels
+- ❌ Do NOT use for mass automated data collection
+- ❌ Do NOT use automated bots to trigger ads
+- ❌ Do NOT violate YouTube's Terms of Service
+
+See [LEGAL.md](LEGAL.md) for complete legal disclaimer and terms of use.
+
+### Terms of Service Compliance
+
+This tool is designed to comply with YouTube's TOS by:
+- Operating only on ads you personally encounter during normal browsing
+- Not automating video viewing or account creation
+- Not interfering with ad display or click tracking
+- Storing all data locally (no mass data collection)
+- Not bypassing or blocking YouTube's advertising systems
+
+**You are responsible for ensuring your use complies with all applicable terms of service and laws.**
+
 ## Disclaimer
 
 This tool is for educational and research purposes. It provides heuristic-based analysis and should not be the sole method for determining if a URL is malicious. Always exercise caution when visiting unfamiliar websites and use multiple security tools for comprehensive protection.
+
+**No Warranty:** This software is provided "AS IS" without warranty. The authors are not liable for any violations of terms of service, false positives/negatives, or any damages resulting from use of this tool.
 
 ## Contact
 
