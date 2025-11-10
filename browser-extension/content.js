@@ -193,13 +193,23 @@
     const videoPlayer = document.querySelector('.html5-video-player');
     if (videoPlayer) {
       debugLog('Found video player, monitoring for ads...');
+      
+      // Monitor for ad-showing class on video player
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            const classList = videoPlayer.classList;
+            if (classList.contains('ad-showing') || classList.contains('ad-interrupting')) {
+              debugLog('VIDEO AD IS PLAYING!');
+              extractVideoAdInfo();
+            }
+          }
+          
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE && isAdElement(node)) {
               const url = extractAdUrl(node);
               if (url) {
-                debugLog('Video ad detected:', url);
+                debugLog('Video ad element detected:', url);
                 captureAdUrl(url);
               }
             }
@@ -209,13 +219,61 @@
       
       observer.observe(videoPlayer, {
         childList: true,
-        subtree: true
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class']
       });
+      
+      // Also check current state
+      if (videoPlayer.classList.contains('ad-showing')) {
+        debugLog('AD CURRENTLY SHOWING');
+        extractVideoAdInfo();
+      }
+    } else {
+      debugLog('Video player not found yet');
+    }
+  }
+
+  function extractVideoAdInfo() {
+    // Look for "Why this ad?" button or visit advertiser button
+    const adButtons = [
+      document.querySelector('.ytp-ad-button'),
+      document.querySelector('.ytp-ad-visit-advertiser-button'),
+      document.querySelector('a[aria-label*="Why this ad"]'),
+      document.querySelector('.ytp-ad-text a'),
+      document.querySelector('[class*="visit-advertiser"]')
+    ];
+    
+    for (const button of adButtons) {
+      if (button && button.href) {
+        debugLog('Found ad link from video ad:', button.href);
+        captureAdUrl(cleanUrl(button.href));
+        return;
+      }
+    }
+    
+    // Look for ad overlay
+    const adOverlay = document.querySelector('.ytp-ad-overlay-container a');
+    if (adOverlay && adOverlay.href) {
+      debugLog('Found ad link from overlay:', adOverlay.href);
+      captureAdUrl(cleanUrl(adOverlay.href));
     }
   }
 
   setupClickMonitoring();
   monitorAdElements();
+
+  // Monitor for video ads more aggressively
+  const checkForVideoAds = () => {
+    const videoPlayer = document.querySelector('.html5-video-player');
+    if (videoPlayer && videoPlayer.classList.contains('ad-showing')) {
+      debugLog('AD DETECTED - Extracting info...');
+      extractVideoAdInfo();
+    }
+  };
+  
+  // Check periodically for video ads
+  setInterval(checkForVideoAds, 1000);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', monitorVideoPlayer);
@@ -224,7 +282,9 @@
   }
 
   setTimeout(monitorVideoPlayer, 2000);
+  setTimeout(monitorVideoPlayer, 5000);
 
   debugLog('Monitoring started - click on ads to capture URLs!');
+  debugLog('Also monitoring video player for in-stream ads...');
 
 })();
